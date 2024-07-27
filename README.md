@@ -1,2 +1,0 @@
-# json-validator
-json-validator
