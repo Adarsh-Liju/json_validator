@@ -15,8 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from .views import MainScreen
+from .views import MainScreen, ValidateJSON
 
 urlpatterns = [
-    path("", MainScreen.as_view(), name=""),
+    path("", MainScreen.as_view(), name="main_screen"),
+    path("validate/", ValidateJSON.as_view(), name="validate_json")
 ]
