@@ -19,5 +19,5 @@ from .views import MainScreen, ValidateJSON
 
 urlpatterns = [
     path("", MainScreen.as_view(), name="main_screen"),
-    path("validate/", ValidateJSON.as_view(), name="validate_json")
+    path("validate-json/", ValidateJSON.as_view(), name="validate_json")
 ]

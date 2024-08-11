@@ -1,14 +1,231 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Validator</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Monaco Editor CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor/min/vs/loader.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #header {
+            padding: 1rem;
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #56ccf2;
+            margin: 0;
+        }
+
+        #editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        #editor {
+            width: 100%;
+            height: calc(100vh - 220px); /* Adjusted height to accommodate the heading */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        #editor:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        #control-panel {
+            padding: 1rem 2rem;
+            background-color: rgba(0, 0, 0, 0.6);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 auto;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        #validateButton {
+            background: linear-gradient(135deg, #56ccf2, #2f80ed);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: center;
+        }
+
+        #validateButton:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #1e293b;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            width: 80%;
+        }
+
+        .modal-content h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-content p {
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .modal-content button {
+            background: linear-gradient(135deg, #56ccf2, #2f80ed);
+            color: white;
+            padding: 0.5rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal.success h2 {
+            color: #56ccf2;
+        }
+
+        .modal.error h2 {
+            color: #ff6b6b;
+        }
+
+    </style>
+</head>
 <body>
 
-<h1>JSON Validator</h1>
+    <!-- Heading -->
+    <header id="header">
+        <h1>Futuristic JSON Validator</h1>
+    </header>
 
-<textarea>
-</textarea>
+    <!-- Editor Container -->
+    <div id="editor-container">
+        <div id="editor"></div>
+    </div>
 
-<button>
-    Validate JSON
-</button>
+    <!-- Control Panel -->
+    <div id="control-panel">
+        <button id="validateButton" class="px-6 py-3 text-lg text-white rounded-md">
+            Validate JSON
+        </button>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal success">
+        <div class="modal-content">
+            <h2>Validation Successful!</h2>
+            <p id="successMessage"></p>
+            <button onclick="closeModal('successModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal error">
+        <div class="modal-content">
+            <h2>Validation Failed!</h2>
+            <p id="errorMessage"></p>
+            <button onclick="closeModal('errorModal')">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Monaco Editor initialization
+        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            window.editor = monaco.editor.create(document.getElementById('editor'), {
+                value: '{\n\t"key": "value"\n}',
+                language: 'json',
+                theme: 'vs-dark',
+                automaticLayout: true
+            });
+        });
+
+        document.getElementById('validateButton').addEventListener('click', function() {
+            // Get the JSON input from Monaco Editor
+            const jsonInput = window.editor.getValue();
+
+            // Send a POST request to the ValidateJSON API endpoint
+            fetch('/validate-json/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: jsonInput,
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showModal('errorModal', `Error: ${data.error} <br> Details: ${data.details}`);
+                } else {
+                    showModal('successModal', `Success: ${data.message} <br> Data: ${JSON.stringify(data.data, null, 2)}`);
+                }
+            })
+            .catch(error => {
+                showModal('errorModal', `Error: ${error.message}`);
+            });
+        });
+
+        function showModal(modalId, message) {
+            const modal = document.getElementById(modalId);
+            if (modalId === 'successModal') {
+                document.getElementById('successMessage').innerHTML = message;
+            } else {
+                document.getElementById('errorMessage').innerHTML = message;
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+    </script>
+
 </body>
 </html>
