@@ -30,21 +30,17 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
-DJANGO_APPS = [
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework'
+    'rest_framework',  # Ensure you have this if you're using Django REST Framework
+    'json_validator_app',  # Custom App
 ]
 
-LOCAL_APPS = [
-    'json_validator_app',
-]
-
-INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
