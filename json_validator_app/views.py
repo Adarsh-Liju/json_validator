@@ -1,3 +1,4 @@
+import pytz
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.http import JsonResponse, HttpResponse
@@ -57,23 +58,36 @@ class PrettifyJSON(APIView):
             return JsonResponse({"error": "An unexpected error occurred", "details": str(e)}, status=500)
 
 
+
 class EpochConverter(APIView):
     """
-    Converts Epoch Time to Human Readable Format
+    Converts Epoch Time to Human Readable Format in IST
     """
+
+    def get(self):
+        try:
+            template = loader.get_template('epoch_converter.html')
+            return HttpResponse(template.render())
+        except Exception as e:
+            return HttpResponse(f"Error rendering template: {str(e)}", status=500)
 
     def post(self, request):
         if not request.body:
             return JsonResponse({"error": "Empty request body"}, status=400)
 
         try:
-            payload = request.body
+            payload = json.loads(request.body)
             epoch_time = payload.get('time')
 
-            # Convert to a human-readable format
-            human_readable_time = datetime.datetime.fromtimestamp(epoch_time)
-            # Format the datetime object as a string in hh:mm:ss Day Month, Year format
-            formatted_time = human_readable_time.strftime('%H:%M:%S %d %B, %Y')
-            return JsonResponse({"message": "Human Readable Time Format", "data": formatted_time}, status=200)
+            # Convert epoch time to datetime
+            utc_time = datetime.datetime.fromtimestamp(epoch_time, tz=pytz.utc)
+
+            # Convert UTC time to IST
+            ist = pytz.timezone('Asia/Kolkata')
+            ist_time = utc_time.astimezone(ist)
+
+            # Format the datetime object as a string in hh:mm:ss Day Month, Year format in IST
+            formatted_time = ist_time.strftime('%H:%M:%S %d %B, %Y IST')
+            return JsonResponse({"message": "Human Readable Time Format in IST", "data": formatted_time}, status=200)
         except Exception as e:
             return JsonResponse({"error": "An unexpected error occurred", "details": str(e)}, status=500)
