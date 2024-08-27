@@ -64,7 +64,7 @@ class EpochConverter(APIView):
     Converts Epoch Time to Human Readable Format in IST
     """
 
-    def get(self):
+    def get(self, request):
         try:
             template = loader.get_template('epoch_converter.html')
             return HttpResponse(template.render())
