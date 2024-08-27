@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from django.http import JsonResponse, HttpResponse
 from django.template import loader
 import json
+import datetime
 
 class MainScreen(APIView):
     """
@@ -52,5 +53,27 @@ class PrettifyJSON(APIView):
             return JsonResponse({"message": "Pretty Print JSON", "data": pretty_json}, status=200)
         except json.JSONDecodeError as e:
             return JsonResponse({"error": "Invalid JSON", "details": str(e)}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": "An unexpected error occurred", "details": str(e)}, status=500)
+
+
+class EpochConverter(APIView):
+    """
+    Converts Epoch Time to Human Readable Format
+    """
+
+    def post(self, request):
+        if not request.body:
+            return JsonResponse({"error": "Empty request body"}, status=400)
+
+        try:
+            payload = request.body
+            epoch_time = payload.get('time')
+
+            # Convert to a human-readable format
+            human_readable_time = datetime.datetime.fromtimestamp(epoch_time)
+            # Format the datetime object as a string in hh:mm:ss Day Month, Year format
+            formatted_time = human_readable_time.strftime('%H:%M:%S %d %B, %Y')
+            return JsonResponse({"message": "Human Readable Time Format", "data": formatted_time}, status=200)
         except Exception as e:
             return JsonResponse({"error": "An unexpected error occurred", "details": str(e)}, status=500)
