@@ -15,10 +15,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path
-from .views import EpochConverter, MainScreen, ValidateJSON
+from .views import (
+    EpochConverter, MainScreen,
+    ValidateJSON, PrettifyJSON
+)
 
 urlpatterns = [
     path("", MainScreen.as_view(), name="main_screen"),
     path("validate-json/", ValidateJSON.as_view(), name="validate_json"),
+    path("pretty-json/", PrettifyJSON.as_view(), name="prettify_json"),
     path("epoch-converter/", EpochConverter.as_view(), name="epoch_converter")
 ]
