@@ -17,6 +17,7 @@
             opacity: 1;
             pointer-events: auto;
         }
+
         /* Custom responsive design */
         @media (max-width: 768px) {
             #editor {
@@ -30,51 +31,53 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
 
     <!-- Main Container -->
-    <div class="w-full max-w-4xl p-4 bg-white rounded-lg shadow-lg">
+    <div class="w-full max-w-4xl p-4 bg-gray-800 rounded-lg shadow-lg">
 
         <!-- Header -->
         <h1 class="text-3xl font-bold mb-4 text-center">JSON Validator & Prettifier</h1>
 
         <!-- Editor Container -->
-        <div id="editor" class="border rounded-lg"></div>
+        <div id="editor" class="border border-gray-700 rounded-lg"></div>
 
         <!-- Buttons -->
         <div class="flex justify-between mt-4">
-            <button onclick="validateJSON()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            <button onclick="validateJSON()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-all duration-200 shadow-lg">
                 Validate JSON
             </button>
-            <button onclick="prettifyJSON()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            <button onclick="prettifyJSON()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-all duration-200 shadow-lg">
                 Prettify JSON
             </button>
-            <button onclick="copyToClipboard()" class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+            <button onclick="copyToClipboard()" class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-500 transition-all duration-200 shadow-lg">
                 Copy to Clipboard
             </button>
         </div>
+        <!-- Output Display -->
+        <div id="output" class="mt-4 text-red-400"></div>
 
     </div>
 
-    <!-- Popup for Error Messages -->
-    <div id="popup" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-gray-900 bg-opacity-50">
-        <div class="bg-white p-8 rounded-lg">
-            <h2 class="text-2xl mb-4">Error</h2>
+    <!-- Popup Message -->
+    <div id="popup" class="hidden fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-70">
+        <div class="bg-gray-800 p-8 rounded-lg text-white shadow-lg">
+            <h2 class="text-2xl mb-4">Message</h2>
             <p id="popup-message" class="mb-4">Invalid JSON format!</p>
-            <button onclick="closePopup()" class="px-4 py-2 bg-red-500 text-white rounded">Close</button>
+            <button onclick="closePopup()" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-200">Close</button>
         </div>
     </div>
 
     <!-- JSON Input Modal -->
-    <div id="jsonModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+    <div id="jsonModal" class="hidden fixed inset-0 bg-black bg-opacity-70 overflow-y-auto h-full w-full">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-gray-800 text-white">
             <div class="mt-3 text-center">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">JSON Input</h3>
+                <h3 class="text-lg leading-6 font-medium">JSON Input</h3>
                 <div class="mt-2 px-7 py-3">
-                    <textarea class="w-full h-48 border p-2" id="jsonInput"></textarea>
+                    <textarea class="w-full h-48 border border-gray-700 p-2 bg-gray-900 text-white rounded-md"></textarea>
                 </div>
                 <div class="items-center px-4 py-3">
-                    <button onclick="closeJsonModal()" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm">
+                    <button onclick="closeJsonModal()" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full hover:bg-blue-600 transition-all duration-200 shadow-sm">
                         Close
                     </button>
                 </div>
@@ -83,25 +86,27 @@
     </div>
 
     <script>
-        // Load Monaco Editor
-        require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.30.1/min/vs' } });
-        require(['vs/editor/editor.main'], function () {
-            window.editor = monaco.editor.create(document.getElementById('editor'), {
-                value: '',
-                language: 'json',
-                theme: 'vs-dark',
-            });
+        window.onload = function() {
+            // Load Monaco Editor
+            require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.30.1/min/vs' } });
+            require(['vs/editor/editor.main'], function () {
+                window.editor = monaco.editor.create(document.getElementById('editor'), {
+                    value: '',
+                    language: 'json',
+                    theme: 'vs-dark',
+                });
 
-            editor.onDidChangeModelContent(() => {
-                try {
-                    const json = editor.getValue();
-                    JSON.parse(json);
-                    editor.updateOptions({ lineDecorationsWidth: '10px', lineNumbersMinChars: 3 });
-                } catch (error) {
-                    // Handle errors gracefully
-                }
+                editor.onDidChangeModelContent(() => {
+                    try {
+                        const json = editor.getValue();
+                        JSON.parse(json);
+                        editor.updateOptions({ lineDecorationsWidth: '10px', lineNumbersMinChars: 3 });
+                    } catch (error) {
+                        // Handle errors gracefully
+                    }
+                });
             });
-        });
+        }
 
         // Show Popup
         function showPopup(message) {
@@ -118,12 +123,28 @@
 
         // Validate JSON
         function validateJSON() {
-            try {
-                const json = editor.getValue();
-                JSON.parse(json);
-                showPopup('JSON is valid!');
-            } catch (error) {
-                showPopup('Invalid JSON format!');
+            const json = editor.getValue();
+            if (json) {
+                fetch('/validate-json/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ json: json })  // Corrected to match expected structure
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const output = document.getElementById('output');
+                    if (data.error) {
+                        output.textContent = `Error: ${data.error}`;
+                    } else {
+                        output.textContent = data.data;
+                    }
+                })
+                .catch(error => {
+                    const output = document.getElementById('output');
+                    output.textContent = `An error occurred: ${error.message}`;
+                });
             }
         }
 

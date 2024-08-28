@@ -1,4 +1,4 @@
-import pytz
+import time
 from django.shortcuts import render
 from rest_framework.views import APIView
 from django.http import JsonResponse, HttpResponse
@@ -79,15 +79,8 @@ class EpochConverter(APIView):
             payload = json.loads(request.body)
             epoch_time = payload.get('time')
 
-            # Convert epoch time to datetime
-            utc_time = datetime.datetime.fromtimestamp(epoch_time, tz=pytz.utc)
+            correct_time = time.strftime("%a, %d %b %Y %H:%M:%S +0000 GMT", time.localtime(epoch_time / 1000))
 
-            # Convert UTC time to IST
-            ist = pytz.timezone('Asia/Kolkata')
-            ist_time = utc_time.astimezone(ist)
-
-            # Format the datetime object as a string in hh:mm:ss Day Month, Year format in IST
-            formatted_time = ist_time.strftime('%H:%M:%S %d %B, %Y IST')
-            return JsonResponse({"message": "Human Readable Time Format in IST", "data": formatted_time}, status=200)
+            return JsonResponse({"message": "Human Readable Time Format in IST", "data": correct_time}, status=200)
         except Exception as e:
             return JsonResponse({"error": "An unexpected error occurred", "details": str(e)}, status=500)
