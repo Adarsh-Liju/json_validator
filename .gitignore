@@ -1,10 +1,11 @@
-
+*.venv
 *.env
 *.pyc
 */__pycache__/*
 .vscode/
 django/.idea/
 .idea/
+
 ### OSX ###
 *.DS_Store
 django/stubs/

@@ -7,3 +7,6 @@ django-environ
 django-cors-headers
 djangorestframework
 django-extensions
+
+# pip tools
+pip-tools
